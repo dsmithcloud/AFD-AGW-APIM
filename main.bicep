@@ -1026,6 +1026,63 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02
   }
 }
 
+// // Private Endpoint for Log Analytics Workspace
+// resource logAnalyticsPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+//   name: 'loganalytics-pe'
+//   location: resourceGroup().location
+//   properties: {
+//     subnet: {
+//       id: spokeVnet.properties.subnets[4].id // ManagementSubnet
+//     }
+//     privateLinkServiceConnections: [
+//       {
+//         name: 'loganalytics-privatelink'
+//         properties: {
+//           privateLinkServiceId: logAnalyticsWorkspace.id
+//           groupIds: [
+//             'workspaces'
+//           ]
+//         }
+//       }
+//     ]
+//   }
+// }
+
+// // Private DNS Zone for Log Analytics
+// resource logAnalyticsPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+//   name: 'privatelink.oms.opinsights.azure.com'
+//   location: 'global'
+// }
+
+// // VNET Link for Log Analytics DNS Zone
+// resource logAnalyticsDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+//   name: 'spokeVnet-link-loganalytics'
+//   parent: logAnalyticsPrivateDnsZone
+//   location: 'global'
+//   properties: {
+//     virtualNetwork: {
+//       id: spokeVnet.id
+//     }
+//     registrationEnabled: false
+//   }
+// }
+
+// // Private DNS Zone Group for Log Analytics Private Endpoint
+// resource logAnalyticsPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+//   name: 'default'
+//   parent: logAnalyticsPrivateEndpoint
+//   properties: {
+//     privateDnsZoneConfigs: [
+//       {
+//         name: 'logAnalyticsDnsZoneConfig'
+//         properties: {
+//           privateDnsZoneId: logAnalyticsPrivateDnsZone.id
+//         }
+//       }
+//     ]
+//   }
+// }
+
 @description('Storage Account for Diagnostics')
 resource diagnosticsStorageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   name: 'contoso${uniqueString(resourceGroup().id)}'
@@ -1036,65 +1093,6 @@ resource diagnosticsStorageAccount 'Microsoft.Storage/storageAccounts@2024-01-01
   kind: 'StorageV2'
   properties: {
     accessTier: 'Hot'
-  }
-}
-
-//// Private Endpoints in ManagementSubnet of SpokeVnet
-
-// Private Endpoint for Log Analytics Workspace
-resource logAnalyticsPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: 'loganalytics-pe'
-  location: resourceGroup().location
-  properties: {
-    subnet: {
-      id: spokeVnet.properties.subnets[4].id // ManagementSubnet
-    }
-    privateLinkServiceConnections: [
-      {
-        name: 'loganalytics-privatelink'
-        properties: {
-          privateLinkServiceId: logAnalyticsWorkspace.id
-          groupIds: [
-            'workspaces'
-          ]
-        }
-      }
-    ]
-  }
-}
-
-// Private DNS Zone for Log Analytics
-resource logAnalyticsPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.oms.opinsights.azure.com'
-  location: 'global'
-}
-
-// VNET Link for Log Analytics DNS Zone
-resource logAnalyticsDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: 'spokeVnet-link-loganalytics'
-  parent: logAnalyticsPrivateDnsZone
-  location: 'global'
-  properties: {
-    virtualNetwork: {
-      id: spokeVnet.id
-    }
-    registrationEnabled: false
-  }
-}
-
-// Private DNS Zone Group for Log Analytics Private Endpoint
-resource logAnalyticsPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: 'default'
-  parent: logAnalyticsPrivateEndpoint
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'logAnalyticsDnsZoneConfig'
-        properties: {
-          privateDnsZoneId: logAnalyticsPrivateDnsZone.id
-        }
-      }
-    ]
   }
 }
 
